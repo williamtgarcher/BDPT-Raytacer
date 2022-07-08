@@ -19,8 +19,8 @@ public:
 	virtual bool hit(const ray& r, float tmin, float tmax, hit_record& rec, bool shadow) const;
 	virtual bool bounding_box(float t0, float t1, aabb& box) const;
 
-	virtual void random_on_surface(hit_record& rec) const {
-		list[min(int(list_size * random()), list_size - 1)]->random_on_surface(rec);
+	virtual void random_on_surface(hit_record& rec, float& area) const {
+		list[min(int(list_size * random()), list_size - 1)]->random_on_surface(rec, area);
 	}
 };
 

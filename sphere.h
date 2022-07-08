@@ -25,11 +25,12 @@ public:
 	virtual bool hit(const ray& r, float tmin, float tmax, hit_record& rec, bool shadow = false) const;
 	virtual bool bounding_box(float t0, float t1, aabb& box) const;
 
-	virtual void random_on_surface(hit_record& rec) const {
+	virtual void random_on_surface(hit_record& rec, float& area) const {
 		rec.normal = random_unit_vector();
 		rec.p = center + radius * rec.normal;
 		rec.mat_ptr = mat_ptr;
 		get_sphere_uv(rec.p, rec.u, rec.v);
+		area = M_PI * radius * radius;
 	}
 };
 

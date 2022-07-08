@@ -33,8 +33,8 @@ public:
 		return true;
 	}
 
-	virtual void random_on_surface(hit_record& rec) const {
-		list_ptr->random_on_surface(rec);
+	virtual void random_on_surface(hit_record& rec, float& area) const {
+		list_ptr->random_on_surface(rec, area);
 	}
 };
 

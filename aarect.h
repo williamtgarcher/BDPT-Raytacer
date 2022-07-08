@@ -18,12 +18,13 @@ public:
 		return true;
 	}
 
-	virtual void random_on_surface(hit_record& rec) const {
+	virtual void random_on_surface(hit_record& rec, float& area) const {
 		rec.u = random();
 		rec.v = random();
 		rec.p = vec3(x0 + (x1 - x0) * rec.u, y0 + (y1 - y0) * rec.v, z);
 		rec.normal = vec3(0, 0, 1);
 		rec.mat_ptr = mp;
+		area = surface_area;
 	}
 };
 
@@ -42,12 +43,13 @@ public:
 		return true;
 	}
 
-	virtual void random_on_surface(hit_record& rec) const {
+	virtual void random_on_surface(hit_record& rec, float& area) const {
 		rec.u = random();
 		rec.v = random();
 		rec.p = vec3(x, y0 + (y1 - y0) * rec.u, z0 + (z1 - z0) * rec.v);
 		rec.normal = vec3(1, 0, 0);
 		rec.mat_ptr = mp;
+		area = surface_area;
 	}
 };
 
@@ -66,12 +68,13 @@ public:
 		return true;
 	}
 
-	virtual void random_on_surface(hit_record& rec) const {
+	virtual void random_on_surface(hit_record& rec, float& area) const {
 		rec.u = random();
 		rec.v = random();
 		rec.p = vec3(x0 + (x1 - x0) * rec.u, y, z0 + (z1 - z0) * rec.v);
 		rec.normal = vec3(0, 1, 0);
 		rec.mat_ptr = mp;
+		area = surface_area;
 	}
 };
 

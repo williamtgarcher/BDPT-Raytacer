@@ -23,7 +23,7 @@ public:
 	virtual bool hit(const ray& r, float t_min, float t_max, hit_record& rec, bool shadow = false) const = 0;
 	virtual bool bounding_box(float t0, float t1, aabb& box) const = 0;
 
-	virtual void random_on_surface(hit_record& rec) const { return; };
+	virtual void random_on_surface(hit_record& rec, float& area) const { return; };
 };
 
 
@@ -46,8 +46,8 @@ public:
 		return ptr->bounding_box(t0, t1, box);
 	}
 
-	virtual void random_on_surface(hit_record& rec) const {
-		ptr->random_on_surface(rec);
+	virtual void random_on_surface(hit_record& rec, float& area) const {
+		ptr->random_on_surface(rec, area);
 		rec.normal = -rec.normal;
 	}
 };
@@ -80,8 +80,8 @@ public:
 		}
 	}
 
-	virtual void random_on_surface(hit_record& rec) const {
-		ptr->random_on_surface(rec);
+	virtual void random_on_surface(hit_record& rec, float& area) const {
+		ptr->random_on_surface(rec, area);
 		rec.p += offset;
 	}
 };
@@ -154,8 +154,8 @@ public:
 		return hasbox;
 	}
 
-	virtual void random_on_surface(hit_record& rec) const {
-		ptr->random_on_surface(rec);
+	virtual void random_on_surface(hit_record& rec, float& area) const {
+		ptr->random_on_surface(rec, area);
 		vec3 origin = rec.p;
 		vec3 direction = rec.normal;
 		origin[0] = cos_theta * rec.p[0] - sin_theta * rec.p[2];

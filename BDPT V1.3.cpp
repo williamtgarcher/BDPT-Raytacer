@@ -85,56 +85,6 @@ vec3 color(const ray& r, hitable* world, int depth, light_path_node* l_path, int
 }
 
 
-vec3 bd_color(const ray& r, hitable* world, scene_lights* lights, int depth) {
-	const int nl = 10;
-	const int max_length = 5;
-	light_path_node* l_path = new light_path_node[nl];
-
-	int nodes = 0;
-	l_path[0] = lights->start_light_path();
-	ray l_ray = ray(l_path[0].position, l_path[0].normal + random_unit_vector());
-	vec3 radiance = l_path[0].radiance;
-	nodes++;
-
-	hit_record rec;
-	vec3 attenuation;
-	vec3 emitted;
-	for (int i = 1; i < max_length && nodes < nl; i++) {
-		if (world->hit(l_ray, 0.001, FLT_MAX, rec)) {
-			emitted = rec.mat_ptr->emitted(l_ray, rec, rec.u, rec.v, rec.p);
-			if (rec.mat_ptr->scatter(l_ray, rec, attenuation, l_ray)) {
-				if (i == 1) {
-					vec3 first_edge = rec.p - l_path[0].position;
-					float first_squared_distance = first_edge.squared_length();
-					first_edge /= sqrt(first_squared_distance);
-					float g_term = abs(dot(first_edge, l_path[0].normal) * dot(first_edge, rec.normal)) / first_squared_distance;
-					radiance *= g_term;
-				}
-				radiance = emitted + attenuation * radiance;
-				if (!rec.mat_ptr->is_specular) {
-					l_path[nodes].normal = rec.normal;
-					l_path[nodes].position = rec.p;
-					l_path[nodes].radiance = radiance;
-					nodes++;
-				}
-			}
-			else {
-				i = max_length;
-			}
-		}
-		else {
-			i = max_length;
-		}
-	}
-
-	vec3 output = color(r, world, depth, l_path, nodes);
-	delete[] l_path;
-	return output;
-}
-
-
-
-
 
 int main() {
 	chrono::system_clock::time_point tp = chrono::system_clock::now();
@@ -143,11 +93,12 @@ int main() {
 	ofstream ImageFile("render.ppm");
 
 	const int nx = 400, ny = 400;
-	const int ns = 20;
+	const int ns = 200;
 	ImageFile << "P3\n" << nx << " " << ny << "\n255\n";
 
 	hitable_list* world = cornell_box();
 	scene_lights* lights = new scene_lights(world);
+	light_paths* l_paths = new light_paths(world, lights, 10000, 10);
 
 	srand(dtn.count());
 
@@ -173,7 +124,9 @@ int main() {
 
 				ray r = cam.get_ray(u, v);
 
-				col += bd_color(r, world, lights, 0);
+				int nodes;
+				light_path_node* path = l_paths->new_path(nodes);
+				col += color(r, world, 0, path, nodes);
 			}
 
 			col /= float(ns);

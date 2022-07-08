@@ -67,6 +67,74 @@ public:
 };
 
 
+class light_paths {
+public:
+	light_path_node** path_list;
+	int* length_list;
+	int n_paths;
+	int max_len;
+
+	int state = 0;
+
+	light_paths(hitable* world, scene_lights* lights, int paths, int max_length) : n_paths(paths), max_len(max_length) {
+		path_list = new light_path_node * [n_paths];
+		length_list = new int[n_paths];
+
+		for (int j = 0; j < n_paths; j++) {
+			light_path_node* l_path = new light_path_node[max_length];
+
+			int nodes = 0;
+			l_path[0] = lights->start_light_path();
+			ray l_ray = ray(l_path[0].position, l_path[0].normal + random_unit_vector());
+			vec3 radiance = l_path[0].radiance;
+			nodes++;
+
+			hit_record rec;
+			vec3 attenuation;
+			vec3 emitted;
+			for (int i = 1; i < max_length; i++) {
+				if (world->hit(l_ray, 0.001, FLT_MAX, rec)) {
+					emitted = rec.mat_ptr->emitted(l_ray, rec, rec.u, rec.v, rec.p);
+					if (rec.mat_ptr->scatter(l_ray, rec, attenuation, l_ray)) {
+						if (i == 1) {
+							vec3 first_edge = rec.p - l_path[0].position;
+							float first_squared_distance = first_edge.squared_length();
+							first_edge /= sqrt(first_squared_distance);
+							float g_term = abs(dot(first_edge, l_path[0].normal) * dot(first_edge, rec.normal)) / first_squared_distance;
+							radiance *= g_term;
+						}
+						radiance = emitted + attenuation * radiance;
+						if (!rec.mat_ptr->is_specular) {
+							l_path[nodes].normal = rec.normal;
+							l_path[nodes].position = rec.p;
+							l_path[nodes].radiance = radiance;
+							nodes++;
+						}
+					}
+					else {
+						i = max_length;
+					}
+				}
+				else {
+					i = max_length;
+				}
+			}
+
+			length_list[j] = nodes;
+			path_list[j] = l_path;
+		}
+	}
+
+
+	light_path_node* new_path(int& nodes) {
+		nodes = length_list[state];
+		light_path_node* output = path_list[state];
+		state = (state + 1) % n_paths;
+		return output;
+	}
+};
+
+
 
 
 

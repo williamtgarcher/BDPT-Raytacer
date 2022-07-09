@@ -19,6 +19,7 @@
 #include "material.h"
 #include "random.h"
 #include "light_path.h"
+#include "bvh.h"
 
 using namespace std;
 
@@ -151,13 +152,15 @@ int main() {
 	ofstream ImageFile("render.ppm");
 
 	const int nx = 400, ny = 400;
-	const int ns = 200;
+	const int ns = 20;
 	const int aa = 4;
 	const int ss = ns / aa;
 	ImageFile << "P3\n" << nx << " " << ny << "\n255\n";
 
-	hitable_list* world = cornell_box();
-	scene_lights* lights = new scene_lights(world);
+	hitable_list* world_list = cornell_box();
+	scene_lights* lights = new scene_lights(world_list);
+	//hitable* world = new bvh_node(world_list->list, world_list->list_size);
+	hitable* world = new hitable_list(world_list->list, world_list->list_size);
 	light_paths* l_paths = new light_paths(world, lights, 10000, 10);
 
 	srand(dtn.count());
@@ -203,7 +206,8 @@ int main() {
 	}
 
 	ImageFile.close();
-	cerr << "\rRender complete." << string(20, ' ') << flush;
+	chrono::system_clock::time_point end_tp = chrono::system_clock::now();
+	cerr << "\rRender complete." << string(20, ' ') << "(" << to_string((end_tp - tp).count() / 1e7) << "s)" << flush;
 	std::ifstream src("render.ppm", std::ios::binary);
 	std::ofstream dst(output_filename, std::ios::binary);
 	dst << src.rdbuf();

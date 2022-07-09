@@ -107,17 +107,17 @@ public:
 		for (int i = 0; i < 2; i++) {
 			for (int j = 0; j < 2; j++) {
 				for (int k = 0; k < 2; k++) {
-					float x = i * bbox._min[0] + (1 - i) * bbox._max[0];
-					float y = j * bbox._min[1] + (1 - j) * bbox._max[1];
-					float z = k * bbox._min[2] + (1 - k) * bbox._max[2];
+					float x = i * bbox._min.e[0] + (1 - i) * bbox._max.e[0];
+					float y = j * bbox._min.e[1] + (1 - j) * bbox._max.e[1];
+					float z = k * bbox._min.e[2] + (1 - k) * bbox._max.e[2];
 
 					float newx = cos_theta * x + sin_theta * z;
 					float newz = -sin_theta * x + cos_theta * z;
 					vec3 tester(newx, y, newz);
 
 					for (int c = 0; c < 3; c++) {
-						_min[c] = (tester[c] < _min[c]) ? tester[c] : _min[c];
-						_max[c] = (tester[c] > _max[c]) ? tester[c] : _max[c];
+						_min.e[c] = (tester.e[c] < _min.e[c]) ? tester.e[c] : _min.e[c];
+						_max.e[c] = (tester.e[c] > _max.e[c]) ? tester.e[c] : _max.e[c];
 					}
 				}
 			}
@@ -129,18 +129,18 @@ public:
 	virtual bool hit(const ray& r, float t_min, float t_max, hit_record& rec, bool shadow = false) const {
 		vec3 origin = r.origin;
 		vec3 direction = r.direction;
-		origin[0] = cos_theta * r.origin[0] - sin_theta * r.origin[2];
-		origin[2] = sin_theta * r.origin[0] + cos_theta * r.origin[2];
-		direction[0] = cos_theta * r.direction[0] - sin_theta * r.direction[2];
-		direction[2] = sin_theta * r.direction[0] + cos_theta * r.direction[2];
+		origin.e[0] = cos_theta * r.origin.e[0] - sin_theta * r.origin.e[2];
+		origin.e[2] = sin_theta * r.origin.e[0] + cos_theta * r.origin.e[2];
+		direction.e[0] = cos_theta * r.direction.e[0] - sin_theta * r.direction.e[2];
+		direction.e[2] = sin_theta * r.direction.e[0] + cos_theta * r.direction.e[2];
 		ray rotated_r(origin, direction);
 		if (ptr->hit(rotated_r, t_min, t_max, rec, shadow)) {
 			vec3 p = rec.p;
 			vec3 normal = rec.normal;
-			p[0] = cos_theta * rec.p[0] + sin_theta * rec.p[2];
-			p[2] = -sin_theta * rec.p[0] + cos_theta * rec.p[2];
-			normal[0] = cos_theta * rec.normal[0] + sin_theta * rec.normal[2];
-			normal[2] = -sin_theta * rec.normal[0] + cos_theta * rec.normal[2];
+			p.e[0] = cos_theta * rec.p.e[0] + sin_theta * rec.p.e[2];
+			p.e[2] = -sin_theta * rec.p.e[0] + cos_theta * rec.p.e[2];
+			normal.e[0] = cos_theta * rec.normal.e[0] + sin_theta * rec.normal.e[2];
+			normal.e[2] = -sin_theta * rec.normal.e[0] + cos_theta * rec.normal.e[2];
 			rec.p = p;
 			rec.normal = normal;
 			return true;
@@ -158,10 +158,10 @@ public:
 		ptr->random_on_surface(rec, area);
 		vec3 origin = rec.p;
 		vec3 direction = rec.normal;
-		origin[0] = cos_theta * rec.p[0] - sin_theta * rec.p[2];
-		origin[2] = sin_theta * rec.p[0] + cos_theta * rec.p[2];
-		direction[0] = cos_theta * rec.normal[0] - sin_theta * rec.normal[2];
-		direction[2] = sin_theta * rec.normal[0] + cos_theta * rec.normal[2];
+		origin.e[0] = cos_theta * rec.p.e[0] - sin_theta * rec.p.e[2];
+		origin.e[2] = sin_theta * rec.p.e[0] + cos_theta * rec.p.e[2];
+		direction.e[0] = cos_theta * rec.normal.e[0] - sin_theta * rec.normal.e[2];
+		direction.e[2] = sin_theta * rec.normal.e[0] + cos_theta * rec.normal.e[2];
 		rec.p = origin;
 		rec.normal = direction;
 	}

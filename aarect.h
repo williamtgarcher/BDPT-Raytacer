@@ -82,17 +82,17 @@ public:
 
 
 bool xy_rect::hit(const ray& r, float tmin, float tmax, hit_record& rec, bool shadow) const {
-	float t = (z - r.origin[2]) / r.direction[2];
+	float t = (z - r.origin.e[2]) / r.direction.e[2];
 	if (t < tmin || t > tmax) {
 		return false;
 	}
 	//vec3 p = r.point_at_parameter(t);
 	vec3 p = r.origin + t * r.direction;
-	if (p[0] < x0 || p[0] > x1 || p[1] < y0 || p[1] > y1) {
+	if (p.e[0] < x0 || p.e[0] > x1 || p.e[1] < y0 || p.e[1] > y1) {
 		return false;
 	}
-	rec.u = (p[0] - x0) / (x1 - x0);
-	rec.v = (p[1] - y0) / (y1 - y0);
+	rec.u = (p.e[0] - x0) / (x1 - x0);
+	rec.v = (p.e[1] - y0) / (y1 - y0);
 	rec.t = t;
 	rec.mat_ptr = mp;
 	rec.p = p;
@@ -102,17 +102,17 @@ bool xy_rect::hit(const ray& r, float tmin, float tmax, hit_record& rec, bool sh
 
 
 bool yz_rect::hit(const ray& r, float tmin, float tmax, hit_record& rec, bool shadow) const {
-	float t = (x - r.origin[0]) / r.direction[0];
+	float t = (x - r.origin.e[0]) / r.direction.e[0];
 	if (t < tmin || t > tmax) {
 		return false;
 	}
 	//vec3 p = r.point_at_parameter(t);
 	vec3 p = r.origin + t * r.direction;
-	if (p[1] < y0 || p[1] > y1 || p[2] < z0 || p[2] > z1) {
+	if (p.e[1] < y0 || p.e[1] > y1 || p.e[2] < z0 || p.e[2] > z1) {
 		return false;
 	}
-	rec.u = (p[1] - y0) / (y1 - y0);
-	rec.v = (p[2] - z0) / (z1 - z0);
+	rec.u = (p.e[1] - y0) / (y1 - y0);
+	rec.v = (p.e[2] - z0) / (z1 - z0);
 	rec.t = t;
 	rec.mat_ptr = mp;
 	rec.p = p;
@@ -122,17 +122,17 @@ bool yz_rect::hit(const ray& r, float tmin, float tmax, hit_record& rec, bool sh
 
 
 bool xz_rect::hit(const ray& r, float tmin, float tmax, hit_record& rec, bool shadow) const {
-	float t = (y - r.origin[1]) / r.direction[1];
+	float t = (y - r.origin.e[1]) / r.direction.e[1];
 	if (t < tmin || t > tmax) {
 		return false;
 	}
 	//vec3 p = r.point_at_parameter(t);
 	vec3 p = r.origin + t * r.direction;
-	if (p[2] < z0 || p[2] > z1 || p[0] < x0 || p[0] > x1) {
+	if (p.e[2] < z0 || p.e[2] > z1 || p.e[0] < x0 || p.e[0] > x1) {
 		return false;
 	}
-	rec.u = (p[2] - z0) / (z1 - z0);
-	rec.v = (p[0] - x0) / (x1 - x0);
+	rec.u = (p.e[2] - z0) / (z1 - z0);
+	rec.v = (p.e[0] - x0) / (x1 - x0);
 	rec.t = t;
 	rec.mat_ptr = mp;
 	rec.p = p;

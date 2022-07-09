@@ -50,6 +50,7 @@ vec3 random_unit_vector() {
 class material {
 public:
 	bool is_specular = true;
+	bool is_rough = false;
 	bool is_light = false;
 
 	virtual bool scatter(const ray& r_in, const hit_record& rec, vec3& attenuation, ray& scattered) const = 0;
@@ -62,8 +63,8 @@ class lambertian : public material {
 public:
 	texture* albedo;
 
-	lambertian(vec3 color) : albedo(new constant_texture(color)) { is_specular = false; }
-	lambertian(texture* a) : albedo(a) { is_specular = false; }
+	lambertian(vec3 color) : albedo(new constant_texture(color)) { is_specular = false; is_rough = true; }
+	lambertian(texture* a) : albedo(a) { is_specular = false; is_rough = true; }
 
 	virtual bool scatter(const ray& r_in, const hit_record& rec, vec3& attenuation, ray& scattered) const {
 		vec3 target = rec.p + rec.normal + random_unit_vector();
@@ -79,7 +80,7 @@ public:
 	vec3 albedo;
 	float fuzz;
 
-	metal(const vec3& a, float f) : albedo(a) { fuzz = (f < 1) ? f : 1; }
+	metal(const vec3& a, float f) : albedo(a) { fuzz = (f < 1) ? f : 1; is_rough = fuzz > 0; }
 
 	virtual bool scatter(const ray& r_in, const hit_record& rec, vec3& attenuation, ray& scattered) const {
 		vec3 reflected = reflect(unit_vector(r_in.direction), rec.normal);

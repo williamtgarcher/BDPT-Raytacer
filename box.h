@@ -12,15 +12,15 @@ public:
 	box() {}
 	box(const vec3& p0, const vec3& p1, material* ptr) {
 		for (int i = 0; i < 3; i++) {
-			pmin[i] = min(p0[i], p1[i]); pmax[i] = max(p0[i], p1[i]);
+			pmin.e[i] = min(p0.e[i], p1.e[i]); pmax.e[i] = max(p0.e[i], p1.e[i]);
 		}
 		hitable** list = new hitable * [6];
-		list[0] = new flip_normals(new xy_rect(pmin[0], pmax[0], pmin[1], pmax[1], pmin[2], ptr));
-		list[1] = new xy_rect(pmin[0], pmax[0], pmin[1], pmax[1], pmax[2], ptr);
-		list[2] = new flip_normals(new xz_rect(pmin[0], pmax[0], pmin[2], pmax[2], pmin[1], ptr));
-		list[3] = new xz_rect(pmin[0], pmax[0], pmin[2], pmax[2], pmax[1], ptr);
-		list[4] = new flip_normals(new yz_rect(pmin[1], pmax[1], pmin[2], pmax[2], pmin[0], ptr));
-		list[5] = new yz_rect(pmin[1], pmax[1], pmin[2], pmax[2], pmax[0], ptr);
+		list[0] = new flip_normals(new xy_rect(pmin.e[0], pmax.e[0], pmin.e[1], pmax.e[1], pmin.e[2], ptr));
+		list[1] = new xy_rect(pmin.e[0], pmax.e[0], pmin.e[1], pmax.e[1], pmax.e[2], ptr);
+		list[2] = new flip_normals(new xz_rect(pmin.e[0], pmax.e[0], pmin.e[2], pmax.e[2], pmin.e[1], ptr));
+		list[3] = new xz_rect(pmin.e[0], pmax.e[0], pmin.e[2], pmax.e[2], pmax.e[1], ptr);
+		list[4] = new flip_normals(new yz_rect(pmin.e[1], pmax.e[1], pmin.e[2], pmax.e[2], pmin.e[0], ptr));
+		list[5] = new yz_rect(pmin.e[1], pmax.e[1], pmin.e[2], pmax.e[2], pmax.e[0], ptr);
 		list_ptr = new hitable_list(list, 6);
 		surface_area = 2 * (list[1]->surface_area + list[3]->surface_area + list[5]->surface_area);
 	}

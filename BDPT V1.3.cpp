@@ -85,6 +85,64 @@ vec3 color(const ray& r, hitable* world, int depth, light_path_node* l_path, int
 }
 
 
+vec3 color_first(const ray& r, hitable* world, light_paths* l_paths, const int ss) {
+	hit_record rec;
+	// t_min is slightly > 0 to prevent reflected rays colliding with the object they reflect from at very small t
+	if (world->hit(r, 0.001, FLT_MAX, rec)) {
+		ray scattered;
+		vec3 attenuation;
+		vec3 emitted = rec.mat_ptr->emitted(r, rec, rec.u, rec.v, rec.p);
+
+		if (!rec.mat_ptr->is_rough) {
+			if (rec.mat_ptr->scatter(r, rec, attenuation, scattered)) {
+				return emitted + attenuation * color_first(scattered, world, l_paths, ss);
+			}
+			else {
+				return emitted;
+			}
+		}
+		
+		if (rec.mat_ptr->scatter(r, rec, attenuation, scattered)) {
+			int nodes;
+			light_path_node* path = l_paths->new_path(nodes);
+			vec3 reflected;
+			vec3 col(0, 0, 0);
+
+			reflected = color(scattered, world, 0, path, nodes);
+			if (!rec.mat_ptr->is_specular) {
+				reflected += l_path_contributions(rec.p, rec.normal, world, path, nodes);
+				col += emitted + attenuation * reflected / (nodes + 1);
+			}
+			else {
+				col += emitted + attenuation * reflected;
+			}
+
+			for (int i = 1; i < ss; i++) {
+				rec.mat_ptr->scatter(r, rec, attenuation, scattered);
+				path = l_paths->new_path(nodes);
+
+				reflected = color(scattered, world, 0, path, nodes);
+				if (!rec.mat_ptr->is_specular) {
+					reflected += l_path_contributions(rec.p, rec.normal, world, path, nodes);
+					col += emitted + attenuation * reflected / (nodes + 1);
+				}
+				else {
+					col += emitted + attenuation * reflected;
+				}
+			}
+			return col / float(ss);
+		}
+		else {
+			return emitted;
+		}
+	}
+	else {
+		return vec3(0, 0, 0);
+	}
+
+}
+
+
 
 int main() {
 	chrono::system_clock::time_point tp = chrono::system_clock::now();
@@ -94,6 +152,8 @@ int main() {
 
 	const int nx = 400, ny = 400;
 	const int ns = 200;
+	const int aa = 4;
+	const int ss = ns / aa;
 	ImageFile << "P3\n" << nx << " " << ny << "\n255\n";
 
 	hitable_list* world = cornell_box();
@@ -118,18 +178,19 @@ int main() {
 
 			vec3 col(0, 0, 0);
 
-			for (int s = 0; s < ns; s++) {
+			for (int s = 0; s < aa; s++) {
 				float u = (float(i) + random()) / float(nx);
 				float v = (float(j) + random()) / float(ny);
 
 				ray r = cam.get_ray(u, v);
 
-				int nodes;
+				/*int nodes;
 				light_path_node* path = l_paths->new_path(nodes);
-				col += color(r, world, 0, path, nodes);
+				col += color(r, world, 0, path, nodes);*/
+				col += color_first(r, world, l_paths, ss);
 			}
 
-			col /= float(ns);
+			col /= float(aa);
 
 
 			row_buffer[i][0] = min(int(255.99 * sqrt(col[0])), 255);

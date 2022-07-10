@@ -36,7 +36,11 @@ hitable_list* cornell_box() {
 	material* aluminium = new metal(vec3(0.8, 0.85, 0.88), 0.1);
 	material* dimlight = new diffuse_light(new constant_texture(vec3(5, 5, 5)));
 
-	list[i++] = new flip_normals(new xz_rect(213, 343, 227, 332, 554, light));
+	/*list[i++] = new flip_normals(new xz_rect(213, 343, 227, 332, 554, light));*/
+	//list[i++] = new flip_normals(new xz_rect(400, 450, 100, 150, 554, dimlight));
+	//list[i++] = new sphere(vec3(475, 500, 125), 20, dimlight);
+	list[i++] = new box(vec3(460, 485, 110), vec3(490, 515, 140), dimlight);
+	list[i++] = new flip_normals(new xz_rect(100, 200, 350, 450, 554, light));
 	//list[i++] = new flip_normals(new xz_rect(213, 275, 227, 275, 554, light));//
 	//list[i++] = new flip_normals(new xz_rect(213, 275, 290, 332, 554, light));//
 	//list[i++] = new flip_normals(new xz_rect(280, 343, 227, 332, 554, light));//
@@ -152,8 +156,8 @@ int main() {
 	ofstream ImageFile("render.ppm");
 
 	const int nx = 400, ny = 400;
-	const int ns = 20;
-	const int aa = 4;
+	const int ns = 200;
+	const int aa = 10;
 	const int ss = ns / aa;
 	ImageFile << "P3\n" << nx << " " << ny << "\n255\n";
 
@@ -161,7 +165,7 @@ int main() {
 	scene_lights* lights = new scene_lights(world_list);
 	//hitable* world = new bvh_node(world_list->list, world_list->list_size);
 	hitable* world = new hitable_list(world_list->list, world_list->list_size);
-	light_paths* l_paths = new light_paths(world, lights, 10000, 10);
+	light_paths* l_paths = new light_paths(world, lights, 1000000, 10);
 
 	srand(dtn.count());
 
@@ -186,11 +190,14 @@ int main() {
 				float v = (float(j) + random()) / float(ny);
 
 				ray r = cam.get_ray(u, v);
-
-				/*int nodes;
-				light_path_node* path = l_paths->new_path(nodes);
-				col += color(r, world, 0, path, nodes);*/
-				col += color_first(r, world, l_paths, ss);
+				
+				// Light source anti-aliasing
+				vec3 c = color_first(r, world, l_paths, ss);
+				c.e[0] = fmin(c.e[0], 1.0);
+				c.e[1] = fmin(c.e[1], 1.0);
+				c.e[2] = fmin(c.e[2], 1.0);
+				col += c;
+				//col += color_first(r, world, l_paths, ss);
 			}
 
 			col /= float(aa);

@@ -5,6 +5,8 @@
 #include "ray.h"
 #include "aabb.h"
 
+#include "light_path_node.h"
+
 class material;
 
 struct hit_record {
@@ -24,6 +26,8 @@ public:
 	virtual bool bounding_box(float t0, float t1, aabb& box) const = 0;
 
 	virtual void random_on_surface(hit_record& rec, float& area) const { return; };
+
+	virtual float visible_area_fraction(const light_path_node& node, const ray& shadow) const = 0;
 };
 
 
@@ -49,6 +53,10 @@ public:
 	virtual void random_on_surface(hit_record& rec, float& area) const {
 		ptr->random_on_surface(rec, area);
 		rec.normal = -rec.normal;
+	}
+
+	virtual float visible_area_fraction(const light_path_node& node, const ray& shadow) const {
+		return ptr->visible_area_fraction(node, shadow);
 	}
 };
 
@@ -83,6 +91,10 @@ public:
 	virtual void random_on_surface(hit_record& rec, float& area) const {
 		ptr->random_on_surface(rec, area);
 		rec.p += offset;
+	}
+
+	virtual float visible_area_fraction(const light_path_node& node, const ray& shadow) const {
+		return ptr->visible_area_fraction(node, shadow);
 	}
 };
 
@@ -164,6 +176,10 @@ public:
 		direction.e[2] = sin_theta * rec.normal.e[0] + cos_theta * rec.normal.e[2];
 		rec.p = origin;
 		rec.normal = direction;
+	}
+
+	virtual float visible_area_fraction(const light_path_node& node, const ray& shadow) const {
+		return ptr->visible_area_fraction(node, shadow);
 	}
 };
 

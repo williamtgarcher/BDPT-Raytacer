@@ -7,7 +7,7 @@
 class box : public hitable {
 public:
 	vec3 pmin, pmax;
-	hitable* list_ptr;
+	hitable_list* list_ptr;
 
 	box() {}
 	box(const vec3& p0, const vec3& p1, material* ptr) {
@@ -35,6 +35,17 @@ public:
 
 	virtual void random_on_surface(hit_record& rec, float& area) const {
 		list_ptr->random_on_surface(rec, area);
+	}
+
+	virtual float visible_area_fraction(const light_path_node& node, const ray& shadow) const {
+		// This should never be called
+		float visible_area = 0;
+		float total_area = 0;
+		for (int i = 0; i < 6; i++) {
+			visible_area += list_ptr->list[i]->visible_area_fraction(node, shadow) * surface_area;
+			total_area += surface_area;
+		}
+		return visible_area / total_area;
 	}
 };
 

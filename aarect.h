@@ -4,6 +4,8 @@
 #include "hitable.h"
 #include "random.h"
 
+#include "light_path_node.h"
+
 class xy_rect : public hitable {
 public:
 	material* mp;
@@ -25,6 +27,10 @@ public:
 		rec.normal = vec3(0, 0, 1);
 		rec.mat_ptr = mp;
 		area = surface_area;
+	}
+
+	virtual float visible_area_fraction(const light_path_node& node, const ray& shadow) const {
+		return abs(dot(node.normal, shadow.direction));
 	}
 };
 
@@ -51,6 +57,10 @@ public:
 		rec.mat_ptr = mp;
 		area = surface_area;
 	}
+
+	virtual float visible_area_fraction(const light_path_node& node, const ray& shadow) const {
+		return abs(dot(node.normal, shadow.direction));
+	}
 };
 
 
@@ -75,6 +85,10 @@ public:
 		rec.normal = vec3(0, 1, 0);
 		rec.mat_ptr = mp;
 		area = surface_area;
+	}
+
+	virtual float visible_area_fraction(const light_path_node& node, const ray& shadow) const {
+		return abs(dot(node.normal, shadow.direction));
 	}
 };
 

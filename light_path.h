@@ -1,11 +1,6 @@
 #pragma once
 
-
-struct light_path_node {
-	vec3 position;
-	vec3 radiance;
-	vec3 normal;
-};
+#include "light_path_node.h"
 
 
 class scene_lights {
@@ -57,8 +52,9 @@ public:
 				light_hitables[i]->random_on_surface(rec, area);
 				output.normal = rec.normal;
 				output.position = rec.p;
-				output.radiance = light_areas[i] * rec.mat_ptr->emitted(ray(rec.p, -rec.normal), rec, rec.u, rec.v, rec.p);
-				output.radiance /= light_weights[i];//?
+				output.radiance = area * rec.mat_ptr->emitted(ray(rec.p, -rec.normal), rec, rec.u, rec.v, rec.p);
+				output.radiance /= light_weights[i];
+				output.light = light_hitables[i];
 				return output;
 			}
 			choice -= light_weights[i];
@@ -87,6 +83,7 @@ public:
 			l_path[0] = lights->start_light_path();
 			ray l_ray = ray(l_path[0].position, l_path[0].normal + random_unit_vector());
 			vec3 radiance = l_path[0].radiance;
+			hitable* light = l_path[0].light;
 			nodes++;
 
 			hit_record rec;
@@ -97,10 +94,11 @@ public:
 					emitted = rec.mat_ptr->emitted(l_ray, rec, rec.u, rec.v, rec.p);
 					if (rec.mat_ptr->scatter(l_ray, rec, attenuation, l_ray)) {
 						if (i == 1) {
-							vec3 first_edge = rec.p - l_path[0].position;
+							vec3 first_edge = l_path[0].position - rec.p;
 							float first_squared_distance = first_edge.squared_length();
 							first_edge /= sqrt(first_squared_distance);
-							float g_term = abs(dot(first_edge, l_path[0].normal) * dot(first_edge, rec.normal)) / first_squared_distance;
+							//float g_term = abs(dot(first_edge, l_path[0].normal) * dot(first_edge, rec.normal)) / first_squared_distance;
+							float g_term = l_path[0].light->visible_area_fraction(l_path[0], ray(rec.p, first_edge)) * abs(dot(first_edge, rec.normal)) / first_squared_distance;
 							radiance *= g_term;
 						}
 						radiance = emitted + attenuation * radiance;
@@ -108,6 +106,7 @@ public:
 							l_path[nodes].normal = rec.normal;
 							l_path[nodes].position = rec.p;
 							l_path[nodes].radiance = radiance;
+							l_path[nodes].light = light;
 							nodes++;
 						}
 					}
@@ -149,10 +148,10 @@ vec3 l_path_contributions(vec3 position, vec3 normal, hitable* world, light_path
 		if (dot(shadow.direction, normal) > 0 && dot(shadow.direction, l_path[i].normal) < 0) {
 			if (!world->hit(shadow, 0.001, distance - 0.001, rec, true)) {
 				if (i == 0) {
-					output += l_path[i].radiance * abs(dot(shadow.direction, normal) * dot(shadow.direction, l_path[i].normal)) / squared_distance;
+					output += l_path[i].radiance * abs(dot(shadow.direction, normal)) * l_path[i].light->visible_area_fraction(l_path[i], shadow) / squared_distance;
 				}
 				else {
-					output += l_path[i].radiance * abs(dot(shadow.direction, l_path[i].normal));
+					output += l_path[i].radiance * l_path[i].light->visible_area_fraction(l_path[i], shadow);
 				}
 			}
 		}

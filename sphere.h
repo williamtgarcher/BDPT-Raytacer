@@ -30,7 +30,14 @@ public:
 		rec.p = center + radius * rec.normal;
 		rec.mat_ptr = mat_ptr;
 		get_sphere_uv(rec.p, rec.u, rec.v);
-		area = M_PI * radius * radius;
+		area = 4 * M_PI * radius * radius;
+	}
+
+	virtual float visible_area_fraction(const light_path_node& node, const ray& shadow) const {
+		//return 0;
+		float d_squared = (center - shadow.origin).squared_length();
+		return 0.25 * d_squared / (d_squared - (radius * radius));
+		//return 0.25;
 	}
 };
 

@@ -18,6 +18,11 @@ public:
 
 	virtual bool hit(const ray& r, float tmin, float tmax, hit_record& rec, bool shadow = false) const;
 	virtual bool bounding_box(float t0, float t1, aabb& box) const;
+
+	virtual float visible_area_fraction(const light_path_node& node, const ray& shadow) const {
+		// This should never be called
+		return 0;
+	}
 };
 
 

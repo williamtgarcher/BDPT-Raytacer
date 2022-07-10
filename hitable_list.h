@@ -22,6 +22,17 @@ public:
 	virtual void random_on_surface(hit_record& rec, float& area) const {
 		list[min(int(list_size * random()), list_size - 1)]->random_on_surface(rec, area);
 	}
+
+	virtual float visible_area_fraction(const light_path_node& node, const ray& shadow) const {
+		// This should never be called
+		float visible_area = 0;
+		float total_area = 0;
+		for (int i = 0; i < list_size; i++) {
+			visible_area += list[i]->visible_area_fraction(node, shadow) * surface_area;
+			total_area += surface_area;
+		}
+		return visible_area / total_area;
+	}
 };
 
 bool hitable_list::hit(const ray& r, float t_min, float t_max, hit_record& rec, bool shadow) const {

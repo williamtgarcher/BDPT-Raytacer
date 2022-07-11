@@ -36,11 +36,11 @@ hitable_list* cornell_box() {
 	material* aluminium = new metal(vec3(0.8, 0.85, 0.88), 0.1);
 	material* dimlight = new diffuse_light(new constant_texture(vec3(5, 5, 5)));
 
-	/*list[i++] = new flip_normals(new xz_rect(213, 343, 227, 332, 554, light));*/
+	list[i++] = new flip_normals(new xz_rect(213, 343, 227, 332, 554, light));
 	//list[i++] = new flip_normals(new xz_rect(400, 450, 100, 150, 554, dimlight));
 	//list[i++] = new sphere(vec3(475, 500, 125), 20, dimlight);
-	list[i++] = new box(vec3(460, 485, 110), vec3(490, 515, 140), dimlight);
-	list[i++] = new flip_normals(new xz_rect(100, 200, 350, 450, 554, light));
+	/*list[i++] = new box(vec3(460, 485, 110), vec3(490, 515, 140), dimlight);
+	list[i++] = new flip_normals(new xz_rect(100, 200, 350, 450, 554, light));*/
 	//list[i++] = new flip_normals(new xz_rect(213, 275, 227, 275, 554, light));//
 	//list[i++] = new flip_normals(new xz_rect(213, 275, 290, 332, 554, light));//
 	//list[i++] = new flip_normals(new xz_rect(280, 343, 227, 332, 554, light));//
@@ -53,7 +53,7 @@ hitable_list* cornell_box() {
 	list[i++] = new flip_normals(new xz_rect(0, 555, 0, 555, 555, white));
 	list[i++] = new flip_normals(new xy_rect(0, 555, 0, 555, 555, white));
 
-	list[i++] = new translate(new rotate_y(new box(vec3(0, 0, 0), vec3(165, 165, 165), white), -18), vec3(130, 0, 65));
+	list[i++] = new translate(new rotate_y(new box(vec3(0, 50, 0), vec3(165, 165, 165), glass), -18), vec3(130, 0, 65));
 	//list[i++] = new sphere(vec3(190, 90, 190), 90, glass);
 	list[i++] = new translate(new rotate_y(new box(vec3(0, 0, 0), vec3(165, 330, 165), white), 15), vec3(265, 0, 295));
 
@@ -90,7 +90,7 @@ vec3 color(const ray& r, hitable* world, int depth, light_path_node* l_path, int
 }
 
 
-vec3 color_first(const ray& r, hitable* world, light_paths* l_paths, const int ss) {
+vec3 color_first(const ray& r, hitable* world, light_paths* l_paths, const int ss, int depth = 0) {
 	hit_record rec;
 	// t_min is slightly > 0 to prevent reflected rays colliding with the object they reflect from at very small t
 	if (world->hit(r, 0.001, FLT_MAX, rec)) {
@@ -98,14 +98,15 @@ vec3 color_first(const ray& r, hitable* world, light_paths* l_paths, const int s
 		vec3 attenuation;
 		vec3 emitted = rec.mat_ptr->emitted(r, rec, rec.u, rec.v, rec.p);
 
-		if (!rec.mat_ptr->is_rough) {
+		// Further propagation of specular reflections leads to issues at dielectric surfaces where both reflection and refraction can happen.
+		/*if (depth < 50 && !rec.mat_ptr->is_rough) {
 			if (rec.mat_ptr->scatter(r, rec, attenuation, scattered)) {
-				return emitted + attenuation * color_first(scattered, world, l_paths, ss);
+				return emitted + attenuation * color_first(scattered, world, l_paths, ss, depth + 1);
 			}
 			else {
 				return emitted;
 			}
-		}
+		}*/
 		
 		if (rec.mat_ptr->scatter(r, rec, attenuation, scattered)) {
 			int nodes;
@@ -165,7 +166,7 @@ int main() {
 	scene_lights* lights = new scene_lights(world_list);
 	//hitable* world = new bvh_node(world_list->list, world_list->list_size);
 	hitable* world = new hitable_list(world_list->list, world_list->list_size);
-	light_paths* l_paths = new light_paths(world, lights, 1000000, 10);
+	light_paths* l_paths = new light_paths(world, lights, 100000, 10);
 
 	srand(dtn.count());
 
